@@ -1,5 +1,0 @@
-JLA_simple.data_directory = os.path.join(data.path['data'], 'JLA')
-JLA_simple.settings       = 'jla_simple.dataset' 
-JLA.conflicting_experiments = ['JLA']
-
-JLA_simple.use_nuisance = ['M']

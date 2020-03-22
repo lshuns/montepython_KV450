@@ -1,3 +1,0 @@
-test_nuisance1.h = 0.7
-test_nuisance1.sigma = 0.1
-test_nuisance1.use_nuisance = ['amplitude']
