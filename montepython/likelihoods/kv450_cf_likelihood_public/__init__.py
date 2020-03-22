@@ -40,6 +40,11 @@ try:
 except NameError:
     xrange = range
 
+# fix nuisance parameters to maximum-likelihood values
+FIX_NUI = True
+# print redundant information for inspection
+PRINT_RE = True
+
 class kv450_cf_likelihood_public(Likelihood):
 
     def __init__(self, path, data, command_line):
@@ -791,6 +796,13 @@ class kv450_cf_likelihood_public(Likelihood):
         self.Omega_m = cosmo.Omega_m()
         self.small_h = cosmo.h()
 
+        # lshuns
+        if PRINT_RE:
+            print('sigma8 =', cosmo.sigma8())
+            print('Omega_m =', self.Omega_m)
+            print('h =', self.small_h)
+            print('S8 =', cosmo.sigma8()*(self.Omega_m/0.3)**0.5)
+
         # needed for IA modelling:
         if ('A_IA' in data.mcmc_parameters) and ('exp_IA' in data.mcmc_parameters):
             amp_IA = data.mcmc_parameters['A_IA']['current'] * data.mcmc_parameters['A_IA']['scale']
@@ -804,6 +816,10 @@ class kv450_cf_likelihood_public(Likelihood):
             intrinsic_alignment = True
         else:
             intrinsic_alignment = False
+
+        # lshuns
+        if FIX_NUI:
+            amp_IA = 4.94014400e-01
 
         # One wants to obtain here the relation between z and r, this is done
         # by asking the cosmological module with the function z_of_r
@@ -835,6 +851,19 @@ class kv450_cf_likelihood_public(Likelihood):
                     z_mod = self.z_p + data.mcmc_parameters[param_name]['current'] * data.mcmc_parameters[param_name]['scale']
                 else:
                     z_mod = self.z_p
+
+                # lshuns
+                if FIX_NUI:
+                    if zbin == 0:
+                        z_mod = self.z_p - 6.03154500e-03
+                    elif zbin == 1:
+                        z_mod = self.z_p + 1.34960300e-03
+                    elif zbin == 2:
+                        z_mod = self.z_p + 2.61900700e-02
+                    elif zbin == 3:
+                        z_mod = self.z_p - 1.55141100e-03
+                    else:
+                        z_mod = self.z_p + 3.09562400e-03
 
                 mask_min = z_mod >= zptemp.min() + shift_to_midpoint
                 mask_max = z_mod <= zptemp.max() + shift_to_midpoint
@@ -903,6 +932,9 @@ class kv450_cf_likelihood_public(Likelihood):
                 dc1_per_zbin[:, zbin] = np.ones(self.ntheta) * data.mcmc_parameters[param_name]['current'] * data.mcmc_parameters[param_name]['scale']
                 # add here dc2 if xi- turns out to be affected!
                 #dc2_per_zbin[zbin] = dc2_per_zbin[zbin]
+                # lshuns
+                if FIX_NUI:
+                    dc1_per_zbin[:, zbin] = np.ones(self.ntheta) * 2.57561000e-05
 
         # correlate dc1/2_per_zbin in tomographic order of xi1/2:
         dc1_sqr = np.zeros((self.ntheta, self.nzcorrs))
@@ -947,6 +979,9 @@ class kv450_cf_likelihood_public(Likelihood):
 
                 if param_name in data.mcmc_parameters:
                     amps_cfunc[zbin] = data.mcmc_parameters[param_name]['current'] * data.mcmc_parameters[param_name]['scale']
+                    # lshuns
+                    if FIX_NUI:
+                        amps_cfunc[zbin] = 1.14268100e+00
 
             index_corr = 0
             for zbin1 in xrange(self.nzbins):
@@ -1302,6 +1337,10 @@ class kv450_cf_likelihood_public(Likelihood):
         #print(chi2)
         #dt = timer() - t0
         #print('Time for one likelihood evaluation: {:.6f}s.'.format(dt))
+
+        # lshuns
+        if PRINT_RE:
+            print(-chi2/2.)
 
         return -chi2/2.
 
