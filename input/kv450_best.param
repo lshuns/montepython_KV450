@@ -20,17 +20,16 @@ data.experiments=['kv450_cf_likelihood_public']
 
 # Cosmological parameters list
 # main parameters to extract:
-
-data.parameters['omega_cdm']    = [5.74881700e-02,   5.74881700e-02, 5.74881700e-02, 0.0027,    1, 'cosmo']
-data.parameters['ln10^{10}A_s'] = [4.69733100e+00,   4.69733100e+00, 4.69733100e+00, 0.0029,    1, 'cosmo']
-data.parameters['omega_b']      = [2.19527000e-02,  2.19527000e-02, 2.19527000e-02, 0.028,  1, 'cosmo']
-data.parameters['n_s']          = [1.12807100e+00,   1.12807100e+00, 1.12807100e+00, 0.0074,    1, 'cosmo']
-data.parameters['h']            = [7.80130100e-01,     7.80130100e-01,   7.80130100e-01,   0.0065, 1, 'cosmo']
+data.cosmo_arguments['omega_cdm']    = 5.74881700e-02
+data.cosmo_arguments['ln10^{10}A_s'] = 4.69733100e+00
+data.cosmo_arguments['omega_b']      = 2.19527000e-02
+data.cosmo_arguments['n_s']          = 1.12807100e+00
+data.cosmo_arguments['h']            = 7.80130100e-01
 
 # Nuisance parameters:
 
 # amplitude for intrinsic alignments (IA):
-data.parameters['A_IA'] = [4.94014400e-01, 4.94014400e-01, 4.94014400e-01, 1.0, 1, 'nuisance']
+data.parameters['A_IA'] = [4.94014400e-01, 4.94014400e-01, 4.94014400e-01, 0, 1, 'nuisance']
 
 # amplitude for baryon feedback with 'halofit':
 #data.parameters['A_bary'] = [0.75, 0.5, 1., 0.5, 1, 'nuisance']
@@ -40,15 +39,15 @@ data.parameters['c_min'] = [2.18854200e+00, 2.18854200e+00, 2.18854200e+00, 1., 
 #data.parameters['eta_0'] = [0.7, 0.59, 0.81, 1., 1, 'cosmo']
 
 # nuisance parameters for c-correction:
-data.parameters['dc'] = [2.57561000e-05, 2.57561000e-05, 2.57561000e-05, 0.0002, 1, 'nuisance']
-data.parameters['Ac'] = [1.14268100e+00, 1.14268100e+00, 1.14268100e+00, 0.13, 1, 'nuisance']
+data.parameters['dc'] = [2.57561000e-05, 2.57561000e-05, 2.57561000e-05, 0, 1, 'nuisance']
+data.parameters['Ac'] = [1.14268100e+00, 1.14268100e+00, 1.14268100e+00, 0, 1, 'nuisance']
 
 ### Delta-z parameters ###
-data.parameters['D_z1'] = [ -6.03154500e-03, -6.03154500e-03, -6.03154500e-03, 0.01, 1, 'nuisance']
-data.parameters['D_z2'] = [ 1.34960300e-03, 1.34960300e-03, 1.34960300e-03, 0.01, 1, 'nuisance']
-data.parameters['D_z3'] = [ 2.61900700e-0, 2.61900700e-0, 2.61900700e-0, 0.01, 1, 'nuisance']
-data.parameters['D_z4'] = [ -1.55141100e-03, -1.55141100e-03, -1.55141100e-03, 0.01, 1, 'nuisance']
-data.parameters['D_z5'] = [ 3.09562400e-03, 3.09562400e-03, 3.09562400e-03, 3.09562400e-03, 1, 'nuisance']
+data.parameters['D_z1'] = [ -6.03154500e-03, -6.03154500e-03, -6.03154500e-03, 0, 1, 'nuisance']
+data.parameters['D_z2'] = [ 1.34960300e-03, 1.34960300e-03, 1.34960300e-03, 0, 1, 'nuisance']
+data.parameters['D_z3'] = [ 2.61900700e-0, 2.61900700e-0, 2.61900700e-0, 0, 1, 'nuisance']
+data.parameters['D_z4'] = [ -1.55141100e-03, -1.55141100e-03, -1.55141100e-03, 0, 1, 'nuisance']
+data.parameters['D_z5'] = [ 3.09562400e-03, 3.09562400e-03, 3.09562400e-03, 0, 1, 'nuisance']
 
 # Derived parameters:
 
