@@ -1,3 +1,9 @@
+============================================================
+Reduced version of Monte Python, dedicated to KV450 analysis
+============================================================
+
+Below is the original Monte Python information...
+
 ===========================================================
 Monte Python, a Monte Carlo Markov Chain code (with Class!)
 ===========================================================
