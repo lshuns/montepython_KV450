@@ -12,7 +12,7 @@ chains/*
 *.pyc
 
 # Custom configuration files
-*.conf
+#*.conf
 
 # Custom parameter files
 *.param
