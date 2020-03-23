@@ -46,7 +46,7 @@ FIX_NUI = True
 PRINT_RE = True
 # output data vector 
 OUTPUT_VEC = True
-OUTPATH = '/disks/shear15/ssli/CosmicShear/public_reproduced/'
+OUTPATH = '/disks/shear15/ssli/CosmicShear/public_reproduced/for_comparison/'
 
 class kv450_cf_likelihood_public(Likelihood):
 
