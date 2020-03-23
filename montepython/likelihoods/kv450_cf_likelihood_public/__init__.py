@@ -228,10 +228,6 @@ class kv450_cf_likelihood_public(Likelihood):
         z_samples = np.asarray(z_samples)
         hist_samples = np.asarray(hist_samples)
 
-        # lshuns
-        if PRINT_RE:
-            print('z_samples = ', z_samples)
-
         # prevent undersampling of histograms!
         if self.nzmax < len(zptemp):
             print("You are trying to integrate at lower resolution than supplied by the n(z) histograms. \n Increase nzmax! Aborting run now... \n")
@@ -269,6 +265,11 @@ class kv450_cf_likelihood_public(Likelihood):
 
         self.zmax = self.z_p.max()
         self.need_cosmo_arguments(data, {'z_max_pk': self.zmax})
+
+        # lshuns
+        if PRINT_RE:
+            print('z_p = ', self.z_p)
+
 
         # Fill array of discrete z values
         # self.z = np.linspace(0, self.zmax, num=self.nzmax)
