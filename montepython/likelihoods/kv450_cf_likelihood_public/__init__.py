@@ -812,6 +812,10 @@ class kv450_cf_likelihood_public(Likelihood):
 
     def loglkl(self, cosmo, data):
 
+        # lshuns
+        if PRINT_RE:
+            print('z_p', self.z_p)
+
         #t0 = timer()
 
         # Omega_m contains all species!
@@ -848,8 +852,8 @@ class kv450_cf_likelihood_public(Likelihood):
         self.r, self.dzdr = cosmo.z_of_r(self.z_p)
 
         # lshuns
-        # if PRINT_RE:
-        #     print('z_p', self.z_p)
+        if PRINT_RE:
+            print('z_p', self.z_p)
 
         # Compute now the selection function p(r) = p(z) dz/dr normalized
         # to one. The np.newaxis helps to broadcast the one-dimensional array
