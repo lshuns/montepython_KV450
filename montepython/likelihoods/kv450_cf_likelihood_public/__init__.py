@@ -1306,6 +1306,14 @@ class kv450_cf_likelihood_public(Likelihood):
         #print(np.allclose(xi_p_test - xi_p, 0.))
         #print(np.allclose(xi_m_test - xi_m, 0.))
 
+
+        # lshuns
+        if OUTPUT_VEC:
+            np.savetxt(OUTPATH+'theory_vector_without_dmc.dat', self.xi)
+            np.savetxt(OUTPATH+'dm_plus_one_sqr_obs.dat', dm_plus_one_sqr_obs)
+            np.savetxt(OUTPATH+'xipm_c.dat', xipm_c)
+            np.savetxt(OUTPATH+'dc_sqr.dat', dc_sqr)
+
         self.xi = self.xi * dm_plus_one_sqr_obs + xipm_c + dc_sqr
 
         if self.write_out_theory:
