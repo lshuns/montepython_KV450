@@ -1186,6 +1186,11 @@ class kv450_cf_likelihood_public(Likelihood):
 
         # lshuns
         if OUTPUT_VEC:
+            np.savetxt(OUTPATH+'dr.dat', dr)
+            np.savetxt(OUTPATH+'Cl_GG_integrand.dat', Cl_GG_integrand)
+            np.savetxt(OUTPATH+'Cl_GI_integrand.dat', Cl_GI_integrand)
+            np.savetxt(OUTPATH+'Cl_II_integrand.dat', Cl_II_integrand)
+            #
             np.savetxt(OUTPATH+'l.dat', self.l)
             np.savetxt(OUTPATH+'Cl.dat', self.Cl)
             np.savetxt(OUTPATH+'Cl_GG.dat', Cl_GG)
