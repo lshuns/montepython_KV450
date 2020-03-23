@@ -1244,6 +1244,13 @@ class kv450_cf_likelihood_public(Likelihood):
             self.xi1 = self.xi1 / (2. * math.pi)
             self.xi2 = self.xi2 / (2. * math.pi)
 
+        # lshuns
+        if OUTPUT_VEC:
+            np.savetxt(OUTPATH+'ldl.dat', ldl)
+            np.savetxt(OUTPATH+'Cll.dat', Cll)
+            np.savetxt(OUTPATH+'xi1.dat', xi1)
+            np.savetxt(OUTPATH+'xi2.dat', xi2)
+
         # Spline the xi's
         for Bin in xrange(self.nzcorrs):
             self.xi1_theta[Bin] = list(itp.splrep(self.theta, self.xi1[:,Bin]))
