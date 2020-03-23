@@ -354,6 +354,19 @@ class kv450_cf_likelihood_public(Likelihood):
                     il += 1
             self.nl = il+1
 
+
+            # lshuns
+            if PRINT_RE:
+                print('theta[-1] = ',self.theta[-1])
+                print('dx_threshold = ',self.dx_threshold)
+                print('dx_below_threshold = ',self.dx_below_threshold)
+                print('dx_above_threshold = ',self.dx_above_threshold)
+                print('lmax = ',self.lmax)
+                print('nthetatot = ',self.nthetatot)
+                print('xmax = ', self.xmax)
+                print('nl = ',self.nl)
+
+
             self.lll = np.zeros(self.nl, 'float64')
             self.il_max = np.zeros(self.nthetatot, 'int')
             il=0
