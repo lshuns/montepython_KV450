@@ -266,11 +266,6 @@ class kv450_cf_likelihood_public(Likelihood):
         self.zmax = self.z_p.max()
         self.need_cosmo_arguments(data, {'z_max_pk': self.zmax})
 
-        # lshuns
-        if PRINT_RE:
-            print('z_p = ', self.z_p)
-
-
         # Fill array of discrete z values
         # self.z = np.linspace(0, self.zmax, num=self.nzmax)
 
@@ -359,19 +354,6 @@ class kv450_cf_likelihood_public(Likelihood):
                     ll += self.dx_above_threshold/self.theta[self.nthetatot-1-it]/self.a2r
                     il += 1
             self.nl = il+1
-
-
-            # lshuns
-            if PRINT_RE:
-                print('theta[-1] = ',self.theta[-1])
-                print('dx_threshold = ',self.dx_threshold)
-                print('dx_below_threshold = ',self.dx_below_threshold)
-                print('dx_above_threshold = ',self.dx_above_threshold)
-                print('lmax = ',self.lmax)
-                print('nthetatot = ',self.nthetatot)
-                print('xmax = ', self.xmax)
-                print('nl = ',self.nl)
-
 
             self.lll = np.zeros(self.nl, 'float64')
             self.il_max = np.zeros(self.nthetatot, 'int')
@@ -812,15 +794,6 @@ class kv450_cf_likelihood_public(Likelihood):
 
     def loglkl(self, cosmo, data):
 
-        self.z_p -= 0.005
-        self.z_p[0] = 0.   
-        self.zp = [0.005,0.025]
-        # lshuns
-        if PRINT_RE:
-            print(self.z_p)
-            print(self.zp)
-
-
         #t0 = timer()
 
         # Omega_m contains all species!
@@ -856,10 +829,6 @@ class kv450_cf_likelihood_public(Likelihood):
         # by asking the cosmological module with the function z_of_r
         self.r, self.dzdr = cosmo.z_of_r(self.z_p)
 
-        # lshuns
-        if PRINT_RE:
-            print('z_p', self.z_p)
-
         # Compute now the selection function p(r) = p(z) dz/dr normalized
         # to one. The np.newaxis helps to broadcast the one-dimensional array
         # dzdr to the proper shape. Note that p_norm is also broadcasted as
@@ -887,19 +856,6 @@ class kv450_cf_likelihood_public(Likelihood):
                 else:
                     z_mod = self.z_p
 
-                # lshuns
-                if FIX_NUI:
-                    if zbin == 0:
-                        z_mod = self.z_p - 6.03154500e-03
-                    elif zbin == 1:
-                        z_mod = self.z_p + 1.34960300e-03
-                    elif zbin == 2:
-                        z_mod = self.z_p + 2.61900700e-02
-                    elif zbin == 3:
-                        z_mod = self.z_p - 1.55141100e-03
-                    else:
-                        z_mod = self.z_p + 3.09562400e-03
-
                 mask_min = z_mod >= zptemp.min() + shift_to_midpoint
                 mask_max = z_mod <= zptemp.max() + shift_to_midpoint
                 mask = mask_min & mask_max
@@ -921,6 +877,20 @@ class kv450_cf_likelihood_public(Likelihood):
                     z_mod = self.z_p + data.mcmc_parameters[param_name]['current'] * data.mcmc_parameters[param_name]['scale']
                 else:
                     z_mod = self.z_p
+
+                # lshuns
+                if FIX_NUI:
+                    if zbin == 0:
+                        z_mod = self.z_p - 6.03154500e-03
+                    elif zbin == 1:
+                        z_mod = self.z_p + 1.34960300e-03
+                    elif zbin == 2:
+                        z_mod = self.z_p + 2.61900700e-02
+                    elif zbin == 3:
+                        z_mod = self.z_p - 1.55141100e-03
+                    else:
+                        z_mod = self.z_p + 3.09562400e-03
+
                 # Load n(z) again:
                 fname = os.path.join(self.data_directory, 'REDSHIFT_DISTRIBUTIONS/Nz_{0:}/Nz_{0:}_Mean/Nz_{0:}_z{1:}.asc'.format(self.nz_method, self.zbin_labels[zbin]))
                 zptemp, hist_pz = np.loadtxt(fname, usecols=(0, 1), unpack=True)
@@ -942,6 +912,8 @@ class kv450_cf_likelihood_public(Likelihood):
         else:
             # use fiducial dn/dz loaded in the __init__:
             self.pr = self.pz * (self.dzdr[:, np.newaxis] / self.pz_norm)
+
+
 
         # nuisance parameter for m-correction (one value for all bins):
         # implemented tomography-friendly so it's very easy to implement a dm per z-bin from here!
@@ -1203,25 +1175,6 @@ class kv450_cf_likelihood_public(Likelihood):
             #print(Cl_GG)
             #print(self.Cl)
 
-        # lshuns
-        if OUTPUT_VEC:
-            np.savetxt(OUTPATH+'factor_IA.dat', factor_IA)
-            np.savetxt(OUTPATH+'pr.dat', self.pr)
-            np.savetxt(OUTPATH+'g.dat', self.g)
-            np.savetxt(OUTPATH+'r.dat', self.r)
-            np.savetxt(OUTPATH+'pk.dat', self.pk)
-            #
-            np.savetxt(OUTPATH+'dr.dat', dr)
-            np.savetxt(OUTPATH+'Cl_GG_integrand.dat', Cl_GG_integrand)
-            np.savetxt(OUTPATH+'Cl_GI_integrand.dat', Cl_GI_integrand)
-            np.savetxt(OUTPATH+'Cl_II_integrand.dat', Cl_II_integrand)
-            #
-            np.savetxt(OUTPATH+'l.dat', self.l)
-            np.savetxt(OUTPATH+'Cl.dat', self.Cl)
-            np.savetxt(OUTPATH+'Cl_GG.dat', Cl_GG)
-            np.savetxt(OUTPATH+'Cl_GI.dat', Cl_GI)
-            np.savetxt(OUTPATH+'Cl_II.dat', Cl_II)
-
         # Spline Cl[il,Bin1,Bin2] along l
         for Bin in xrange(self.nzcorrs):
             self.spline_Cl[Bin] = list(itp.splrep(self.l, self.Cl[:, Bin]))
@@ -1295,13 +1248,6 @@ class kv450_cf_likelihood_public(Likelihood):
             self.xi1 = self.xi1 / (2. * math.pi)
             self.xi2 = self.xi2 / (2. * math.pi)
 
-        # lshuns
-        if OUTPUT_VEC:
-            np.savetxt(OUTPATH+'ldl.dat', self.ldl)
-            np.savetxt(OUTPATH+'Cll.dat', self.Cll)
-            np.savetxt(OUTPATH+'xi1.dat', self.xi1)
-            np.savetxt(OUTPATH+'xi2.dat', self.xi2)
-
         # Spline the xi's
         for Bin in xrange(self.nzcorrs):
             self.xi1_theta[Bin] = list(itp.splrep(self.theta, self.xi1[:,Bin]))
@@ -1364,14 +1310,6 @@ class kv450_cf_likelihood_public(Likelihood):
         #print(np.allclose(xi_p_test - xi_p, 0.))
         #print(np.allclose(xi_m_test - xi_m, 0.))
 
-
-        # lshuns
-        if OUTPUT_VEC:
-            np.savetxt(OUTPATH+'theory_vector_without_dmc.dat', self.xi)
-            np.savetxt(OUTPATH+'dm_plus_one_sqr_obs.dat', dm_plus_one_sqr_obs)
-            np.savetxt(OUTPATH+'xipm_c.dat', xipm_c)
-            np.savetxt(OUTPATH+'dc_sqr.dat', dc_sqr)
-
         self.xi = self.xi * dm_plus_one_sqr_obs + xipm_c + dc_sqr
 
         if self.write_out_theory:
@@ -1384,12 +1322,6 @@ class kv450_cf_likelihood_public(Likelihood):
         vec = self.xi[self.mask_indices] - self.xi_obs[self.mask_indices]
         #print(self.xi_obs[self.mask_indices], len(self.xi_obs[self.mask_indices]))
         #print(self.xi[self.mask_indices], len(self.xi[self.mask_indices]))
-        # lshuns
-        if OUTPUT_VEC:
-            np.savetxt(OUTPATH+'theory_vector_unmasked.dat', self.xi)
-            np.savetxt(OUTPATH+'data_vector_unmasked.dat', self.xi_obs)
-            np.savetxt(OUTPATH+'theory_vector_masked.dat', self.xi[self.mask_indices])
-            np.savetxt(OUTPATH+'data_vector_masked.dat', self.xi_obs[self.mask_indices])
 
         # this is for running smoothly with MultiNest
         # (in initial checking of prior space, there might occur weird solutions)
@@ -1415,7 +1347,7 @@ class kv450_cf_likelihood_public(Likelihood):
 
         # lshuns
         if PRINT_RE:
-            print(-chi2/2.)
+            print('chi2 =', chi2)
 
         return -chi2/2.
 
