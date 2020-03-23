@@ -221,6 +221,12 @@ class kv450_cf_likelihood_public(Likelihood):
                 hist_samples += [np.concatenate((np.zeros(1), hist_pz))]
             else:
                 raise io_mp.LikelihoodError("File not found:\n %s"%window_file_path)
+
+            # lshuns
+            if PRINT_RE:
+                print('zptemp = ', zptemp, 'zbin', zbin)
+                print('shift_to_midpoint = ', shift_to_midpoint, 'zbin', zbin)
+
         print('Loaded redshift distributions from: \n', os.path.join(
                 self.data_directory, 'REDSHIFT_DISTRIBUTIONS/Nz_{0:}/Nz_{0:}_Mean/'.format(self.nz_method)), '\n')
 
@@ -841,8 +847,9 @@ class kv450_cf_likelihood_public(Likelihood):
         # by asking the cosmological module with the function z_of_r
         self.r, self.dzdr = cosmo.z_of_r(self.z_p)
 
-        if PRINT_RE:
-            print('z_p', self.z_p)
+        # lshuns
+        # if PRINT_RE:
+        #     print('z_p', self.z_p)
 
         # Compute now the selection function p(r) = p(z) dz/dr normalized
         # to one. The np.newaxis helps to broadcast the one-dimensional array
