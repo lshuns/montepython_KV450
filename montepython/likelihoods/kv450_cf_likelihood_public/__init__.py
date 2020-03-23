@@ -44,6 +44,9 @@ except NameError:
 FIX_NUI = True
 # print redundant information for inspection
 PRINT_RE = True
+# output data vector 
+OUTPUT_VEC = True
+OUTPATH = '/disks/shear15/ssli/CosmicShear/public_reproduced/'
 
 class kv450_cf_likelihood_public(Likelihood):
 
@@ -1315,6 +1318,12 @@ class kv450_cf_likelihood_public(Likelihood):
         vec = self.xi[self.mask_indices] - self.xi_obs[self.mask_indices]
         #print(self.xi_obs[self.mask_indices], len(self.xi_obs[self.mask_indices]))
         #print(self.xi[self.mask_indices], len(self.xi[self.mask_indices]))
+        # lshuns
+        if OUTPUT_VEC:
+            np.savetxt(OUTPATH+'theory_vector_unmasked.dat', self.xi)
+            np.savetxt(OUTPATH+'data_vector_unmasked.dat', self.xi_obs)
+            np.savetxt(OUTPATH+'theory_vector_masked.dat', self.xi[self.mask_indices])
+            np.savetxt(OUTPATH+'data_vector_masked.dat', self.xi_obs[self.mask_indices])
 
         # this is for running smoothly with MultiNest
         # (in initial checking of prior space, there might occur weird solutions)
