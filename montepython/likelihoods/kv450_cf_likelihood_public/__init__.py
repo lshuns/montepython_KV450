@@ -814,9 +814,12 @@ class kv450_cf_likelihood_public(Likelihood):
 
         self.z_p -= 0.005
         self.z_p[0] = 0.   
+        self.zp = [0.005,0.025]
         # lshuns
         if PRINT_RE:
-            print '%.3f'%(self.z_p)
+            print(self.z_p)
+            print(self.zp)
+
 
         #t0 = timer()
 
