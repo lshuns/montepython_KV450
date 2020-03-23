@@ -841,6 +841,9 @@ class kv450_cf_likelihood_public(Likelihood):
         # by asking the cosmological module with the function z_of_r
         self.r, self.dzdr = cosmo.z_of_r(self.z_p)
 
+        if PRINT_RE:
+            print('z_p', self.z_p)
+
         # Compute now the selection function p(r) = p(z) dz/dr normalized
         # to one. The np.newaxis helps to broadcast the one-dimensional array
         # dzdr to the proper shape. Note that p_norm is also broadcasted as
