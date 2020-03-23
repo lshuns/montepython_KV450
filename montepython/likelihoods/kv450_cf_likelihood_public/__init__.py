@@ -222,16 +222,15 @@ class kv450_cf_likelihood_public(Likelihood):
             else:
                 raise io_mp.LikelihoodError("File not found:\n %s"%window_file_path)
 
-            # lshuns
-            if PRINT_RE:
-                print('zptemp = ', zptemp, 'zbin', zbin)
-                print('shift_to_midpoint = ', shift_to_midpoint, 'zbin', zbin)
-
         print('Loaded redshift distributions from: \n', os.path.join(
                 self.data_directory, 'REDSHIFT_DISTRIBUTIONS/Nz_{0:}/Nz_{0:}_Mean/'.format(self.nz_method)), '\n')
 
         z_samples = np.asarray(z_samples)
         hist_samples = np.asarray(hist_samples)
+
+        # lshuns
+        if PRINT_RE:
+            print('z_samples = ', z_samples)
 
         # prevent undersampling of histograms!
         if self.nzmax < len(zptemp):
