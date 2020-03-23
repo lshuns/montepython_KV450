@@ -35,10 +35,6 @@ data.parameters['A_IA'] = [0.0, -6.0, 6.0, 1.0, 1, 'nuisance']
 #data.parameters['A_bary'] = [0.75, 0.5, 1., 0.5, 1, 'nuisance']
 
 # parameters for baryon feedback with 'hmcode':
-#data.parameters['c_min'] = [3., 2., 3.13, 1., 1, 'cosmo']
-#data.parameters['eta_0'] = [0.7, 0.59, 0.81, 1., 1, 'cosmo']
-
-# parameters for baryon feedback with 'hmcode':
 data.parameters['c_min'] = [2.18854200e+00, 2.18854200e+00, 2.18854200e+00, 1., 1, 'cosmo']
 #data.parameters['eta_0'] = [0.7, 0.59, 0.81, 1., 1, 'cosmo']
 
