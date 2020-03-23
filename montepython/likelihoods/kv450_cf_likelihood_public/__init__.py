@@ -812,7 +812,7 @@ class kv450_cf_likelihood_public(Likelihood):
 
     def loglkl(self, cosmo, data):
 
-        self.z_p -= 0.05
+        self.z_p -= 0.005
         self.z_p[0] = 0.   
         # lshuns
         if PRINT_RE:
