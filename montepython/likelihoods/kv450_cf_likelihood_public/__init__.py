@@ -1184,6 +1184,14 @@ class kv450_cf_likelihood_public(Likelihood):
             #print(Cl_GG)
             #print(self.Cl)
 
+        # lshuns
+        if OUTPUT_VEC:
+            np.savetxt(OUTPATH+'l.dat', self.l)
+            np.savetxt(OUTPATH+'Cl.dat', self.Cl)
+            np.savetxt(OUTPATH+'Cl_GG.dat', Cl_GG)
+            np.savetxt(OUTPATH+'Cl_GI.dat', Cl_GI)
+            np.savetxt(OUTPATH+'Cl_II.dat', Cl_II)
+
         # Spline Cl[il,Bin1,Bin2] along l
         for Bin in xrange(self.nzcorrs):
             self.spline_Cl[Bin] = list(itp.splrep(self.l, self.Cl[:, Bin]))
