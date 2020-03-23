@@ -1246,10 +1246,10 @@ class kv450_cf_likelihood_public(Likelihood):
 
         # lshuns
         if OUTPUT_VEC:
-            np.savetxt(OUTPATH+'ldl.dat', ldl)
-            np.savetxt(OUTPATH+'Cll.dat', Cll)
-            np.savetxt(OUTPATH+'xi1.dat', xi1)
-            np.savetxt(OUTPATH+'xi2.dat', xi2)
+            np.savetxt(OUTPATH+'ldl.dat', self.ldl)
+            np.savetxt(OUTPATH+'Cll.dat', self.Cll)
+            np.savetxt(OUTPATH+'xi1.dat', self.xi1)
+            np.savetxt(OUTPATH+'xi2.dat', self.xi2)
 
         # Spline the xi's
         for Bin in xrange(self.nzcorrs):
