@@ -38,3 +38,7 @@ data/JLA/
 # Ignore the coverage reports
 .coverage
 htmlcov/
+
+# Ingonre nohup output
+nohup*
+
