@@ -1,3 +1,3 @@
-This repository contains the likelihood module modified from 'kv450_cg_likelihood_public', the KiDS+VIKING-450 (in short: KV450) correlation function measurements from [Hildebrandt et al. 2018 (arXiv:1812.06076)](http://adsabs.harvard.edu/abs/2018arXiv181206076H).
+This repository contains the likelihood module modified from 'kv450_cf_likelihood_public', the KiDS+VIKING-450 (in short: KV450) correlation function measurements from [Hildebrandt et al. 2018 (arXiv:1812.06076)](http://adsabs.harvard.edu/abs/2018arXiv181206076H).
 
 By fixing model parameters, the purpose of this module is to predict the correlation function from model parameters. The structure of likelihood (the way to calculate theory vector) is not changed. 
