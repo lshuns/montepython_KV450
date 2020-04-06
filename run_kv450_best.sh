@@ -2,7 +2,7 @@
 # Running fixed maximum-likelihood values from public mcmc chain
 dataDir=/disks/shear15/ssli/CosmicShear/kv450_public_reproduced
 
-rm $dataDir/*
+rm -r $dataDir/*
 
 ## a short chain with Metropolis Hastings
 python2 \
