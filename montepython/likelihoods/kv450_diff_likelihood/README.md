@@ -5,7 +5,11 @@ This version of likelihood allows using the difference between two data vectors 
 Change log:
 
 2020-04-06: 
+    
     module built with copy from 'kv450_cf_likelihood_public'
+
     rename all 'kv450_cf_likelihood_public' into 'kv450_diff_likelihood'
+    
     comments info added to __init__.py
+    
     -------------- kv450_diff_likelihood built
