@@ -39,6 +39,8 @@ data/JLA/
 .coverage
 htmlcov/
 
-# Ingonre nohup output
+# Ignore nohup output
 nohup*
 
+# Ignore python cache
+*pycache*
