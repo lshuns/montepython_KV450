@@ -44,3 +44,6 @@ nohup*
 
 # Ignore python cache
 *pycache*
+
+# Ignore test related files
+*test*
