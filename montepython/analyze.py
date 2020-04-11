@@ -1492,8 +1492,12 @@ def clean_conversion(module_name, tag, folder):
 
     if has_module and os.path.isdir(folder):
         # Remove any potential trailing slash
-        folder = os.path.join(
-            *[elem for elem in folder.split(os.path.sep) if elem])
+        if folder[0]=='/':
+            folder = '/' + os.path.join(
+                *[elem for elem in folder.split(os.path.sep) if elem])
+        else:
+            folder = os.path.join(
+                *[elem for elem in folder.split(os.path.sep) if elem])
         if folder.split(os.path.sep)[-1] == subfolder:
             try:
                 getattr(module, 'from_%s_output_to_chains' % tag)(folder)
