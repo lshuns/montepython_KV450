@@ -47,3 +47,6 @@ nohup*
 
 # Ignore test related files
 *test*
+
+# Ignore archive
+archive
