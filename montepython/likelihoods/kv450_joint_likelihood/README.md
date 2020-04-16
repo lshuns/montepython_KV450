@@ -20,3 +20,23 @@ Changelog
     rename to 'kv450_joint_likelihood'
 
     -------------- move to kv450_joint_likelihood
+
+2020-04-12:
+    
+    remove data existence check in the beginning of __init__.py
+
+    remove saving masked covariance in list format
+
+    remove __write_out_vector_in_list_format, self.write_out_theory (redundant for mcmc running)
+
+    remove __load_public_theory_vector, covariance list operation (covariance is supposed to be provided in matrix form)
+
+    remove self.bootstrap_photoz_errors (not even used)
+
+    rename all data-loading-related file names
+
+    Adding Gaussian prior using pre-define methods
+
+    Redshift distribution only read once when initialization
+
+    mimic the framework from (https://github.com/fkoehlin/montepython_2cosmos_public.git)
