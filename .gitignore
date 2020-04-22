@@ -50,3 +50,6 @@ nohup*
 
 # Ignore archive
 archive
+
+# Ignore data files
+data/*
