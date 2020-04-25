@@ -22,9 +22,9 @@ kv450_joint_fix_cosmo_likelihood.sample2 = 'less3'
 kv450_joint_fix_cosmo_likelihood.data_directory = data.path['data']
 
 ## covariance matrix files ##
-kv450_joint_fix_cosmo_likelihood.cov11_file = 'thps_cov_mar11_bb_inc_m_usable.dat'
-kv450_joint_fix_cosmo_likelihood.cov22_file = 'thps_cov_mar11_rr_inc_m_usable.dat'
-kv450_joint_fix_cosmo_likelihood.cov12_file = 'thps_cov_mar11_br_inc_m_usable.dat'
+kv450_joint_fix_cosmo_likelihood.cov11_file = 'thps_cov_apr8_bb_inc_m_usable.dat'
+kv450_joint_fix_cosmo_likelihood.cov22_file = 'thps_cov_apr8_rr_inc_m_usable.dat'
+kv450_joint_fix_cosmo_likelihood.cov12_file = 'thps_cov_apr8_br_inc_m_usable.dat'
 
 ## BINNING OF THEORY VECTOR ##
 

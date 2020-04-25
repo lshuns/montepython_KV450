@@ -452,7 +452,7 @@ class kv450_single_likelihood(Likelihood):
         """
 
         if self.sample_tag != 'whole':
-            fname = os.path.join(self.data_directory, 'cov_mat/thps_cov_mar11_{:}_inc_m_usable.dat'.format(self.sample_tag))
+            fname = os.path.join(self.data_directory, 'cov_mat/thps_cov_apr8_{:}_inc_m_usable.dat'.format(self.sample_tag))
         elif self.sample_tag == 'whole':
             fname = os.path.join(self.data_directory, 'cov_mat/Cov_mat_all_scales_inc_m_use_with_kv450_cf_likelihood_public.dat')
         else:
