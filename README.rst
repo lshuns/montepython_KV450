@@ -2,6 +2,10 @@
 Reduced version of Monte Python, dedicated to KV450 analysis
 ============================================================
 
+For running, check out scripts/
+
+The main changes happened in inputs/ and montepython/likelihoods/
+
 Below is the original Monte Python information...
 
 ===========================================================
