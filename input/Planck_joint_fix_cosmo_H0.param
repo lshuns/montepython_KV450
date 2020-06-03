@@ -1,0 +1,99 @@
+#------Experiments to test (separated with commas)-----
+
+data.experiments=['kv450_joint_fix_cosmo_H0']
+
+
+#------ Settings for the over-sampling. The first element will always be set to
+# 1, for it is the sampling of the cosmological parameters. The other numbers
+# describe the over sampling of the nuisance parameter space. This array must
+# have the same dimension as the number of blocks in your run (so, 1 for
+# cosmological parameters, and then 1 for each experiment with varying nuisance
+# parameters).
+#data.over_sampling=[1, 4]
+
+
+#------ Parameters to be fixed -------
+# data.parameters[class name] = [mean, min, max, 1-sigma, scale, role]
+# - if min max irrelevant, put to -1
+# - if fixed, put 1-sigma to 0
+# - if scale irrelevant, put to 1, otherwise to the appropriate factor
+# - role is either 'cosmo' or 'nuisance'
+
+# ++++++ Cosmological parameters list
+# Plik best fit (1807.06209)
+data.cosmo_arguments['omega_cdm']    = 0.12011
+data.cosmo_arguments['ln10^{10}A_s'] = 3.0448
+data.cosmo_arguments['omega_b']      = 0.022383
+data.cosmo_arguments['n_s']          = 0.96605
+data.cosmo_arguments['h']            = 0.6732
+
+
+# parameters for baryon feedback with 'hmcode':
+# KV450 best fit
+data.cosmo_arguments['c_min']        = 2.18854200e+00
+
+
+# Derived parameters:
+# !!! Do not apply any derived cosmological para, due to some bugs in sampler.py
+#data.parameters['Omega_m']      = [1, None, None, 0, 1, 'derived']
+#data.parameters['sigma8']       = [1, None, None, 0, 1, 'derived']
+
+
+# ++++++ Other cosmo parameters (fixed parameters, precision parameters, etc.)
+
+# fix main cosmology to Planck:
+data.cosmo_arguments['Omega_k'] = 0.
+
+# The base model features two massless
+# and one massive neutrino with m=0.06eV.
+# The settings below ensures that these
+# three species contribute equally
+# to the radiation density at large
+# redshift, with a total of Neff=3.046
+data.cosmo_arguments['N_eff'] = 2.0328
+data.cosmo_arguments['N_ncdm'] = 1
+data.cosmo_arguments['m_ncdm'] = 0.06
+data.cosmo_arguments['T_ncdm'] = 0.71611
+
+# standard BBN prediction of the primordial Helium abundance $Y_p$:
+data.cosmo_arguments['sBBN file'] = data.path['cosmo']+'/bbn/sBBN.dat'
+data.cosmo_arguments['k_pivot'] = 0.05
+
+# only needed for regular MCMC:
+data.write_step = 1
+
+# ++++++ Nuisance parameters:
+
+# nuisance parameters for c-correction:
+data.parameters['dc'] = [0, -1, -1, 0, 1, 'nuisance']
+data.parameters['Ac'] = [1, -1, -1, 0, 1, 'nuisance']
+
+
+
+#------ Parameters to be freed -------
+
+# H0
+#   set1:
+#       two sub-samples share common set of redshift offsets (other parameters are fixed)
+data.parameters['A_IA'] = [0.0, -6.0, 6.0, 1.0, 1, 'nuisance']
+data.parameters['D_z1'] = [ 0., -0.117, 0.117, 0.01, 1, 'nuisance']
+data.parameters['D_z2'] = [ 0., -0.069, 0.069, 0.01, 1, 'nuisance']
+data.parameters['D_z3'] = [ 0., -0.078, 0.078, 0.01, 1, 'nuisance']
+data.parameters['D_z4'] = [ 0., -0.036, 0.036, 0.01, 1, 'nuisance']
+data.parameters['D_z5'] = [ 0., -0.033, 0.033, 0.01, 1, 'nuisance']
+#   set2:
+#       double the prior range
+#data.parameters['A_IA'] = [0.0, -6.0, 6.0, 1.0, 1, 'nuisance']
+#data.parameters['D_z1'] = [ 0., -0.117*2, 0.117*2, 0.01, 1, 'nuisance']
+#data.parameters['D_z2'] = [ 0., -0.069*2, 0.069*2, 0.01, 1, 'nuisance']
+#data.parameters['D_z3'] = [ 0., -0.078*2, 0.078*2, 0.01, 1, 'nuisance']
+#data.parameters['D_z4'] = [ 0., -0.036*2, 0.036*2, 0.01, 1, 'nuisance']
+#data.parameters['D_z5'] = [ 0., -0.033*2, 0.033*2, 0.01, 1, 'nuisance']
+#   set3:
+#       fix A_IA to 0
+#data.parameters['A_IA'] = [0.0, -1, -1, 0, 1, 'nuisance']
+#data.parameters['D_z1'] = [ 0., -0.117, 0.117, 0.01, 1, 'nuisance']
+#data.parameters['D_z2'] = [ 0., -0.069, 0.069, 0.01, 1, 'nuisance']
+#data.parameters['D_z3'] = [ 0., -0.078, 0.078, 0.01, 1, 'nuisance']
+#data.parameters['D_z4'] = [ 0., -0.036, 0.036, 0.01, 1, 'nuisance']
+#data.parameters['D_z5'] = [ 0., -0.033, 0.033, 0.01, 1, 'nuisance']

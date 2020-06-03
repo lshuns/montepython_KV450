@@ -1,0 +1,131 @@
+#------Experiments to test (separated with commas)-----
+
+data.experiments=['kv450_joint_fix_cosmo_H1']
+
+
+#------ Settings for the over-sampling. The first element will always be set to
+# 1, for it is the sampling of the cosmological parameters. The other numbers
+# describe the over sampling of the nuisance parameter space. This array must
+# have the same dimension as the number of blocks in your run (so, 1 for
+# cosmological parameters, and then 1 for each experiment with varying nuisance
+# parameters).
+#data.over_sampling=[1, 4]
+
+
+#------ Parameters to be fixed -------
+# data.parameters[class name] = [mean, min, max, 1-sigma, scale, role]
+# - if min max irrelevant, put to -1
+# - if fixed, put 1-sigma to 0
+# - if scale irrelevant, put to 1, otherwise to the appropriate factor
+# - role is either 'cosmo' or 'nuisance'
+
+# ++++++ Cosmological parameters list
+# kv450 best 
+data.cosmo_arguments['omega_cdm']    = 5.74881700e-02
+data.cosmo_arguments['ln10^{10}A_s'] = 4.69733100e+00
+data.cosmo_arguments['omega_b']      = 2.19527000e-02
+data.cosmo_arguments['n_s']          = 1.12807100e+00
+data.cosmo_arguments['h']            = 7.80130100e-01
+
+# parameters for baryon feedback with 'hmcode':
+data.cosmo_arguments['c_min']        = 2.18854200e+00
+
+
+# Derived parameters:
+# !!! Do not apply any derived cosmological para, due to some bugs in sampler.py
+#data.parameters['Omega_m']      = [1, None, None, 0, 1, 'derived']
+#data.parameters['sigma8']       = [1, None, None, 0, 1, 'derived']
+
+
+# ++++++ Other cosmo parameters (fixed parameters, precision parameters, etc.)
+
+# fix main cosmology to Planck:
+data.cosmo_arguments['Omega_k'] = 0.
+
+# The base model features two massless
+# and one massive neutrino with m=0.06eV.
+# The settings below ensures that these
+# three species contribute equally
+# to the radiation density at large
+# redshift, with a total of Neff=3.046
+data.cosmo_arguments['N_eff'] = 2.0328
+data.cosmo_arguments['N_ncdm'] = 1
+data.cosmo_arguments['m_ncdm'] = 0.06
+data.cosmo_arguments['T_ncdm'] = 0.71611
+
+# standard BBN prediction of the primordial Helium abundance $Y_p$:
+data.cosmo_arguments['sBBN file'] = data.path['cosmo']+'/bbn/sBBN.dat'
+data.cosmo_arguments['k_pivot'] = 0.05
+
+# only needed for regular MCMC:
+data.write_step = 1
+
+# ++++++ Nuisance parameters:
+
+# nuisance parameters for c-correction:
+data.parameters['dc'] = [0, -1, -1, 0, 1, 'nuisance']
+data.parameters['Ac'] = [1, -1, -1, 0, 1, 'nuisance']
+
+
+#------ Parameters to be freed -------
+
+# H1
+#   set1: (naive duplicated)
+#       two sub-samples associated with different sets of redshift offsets (other parameters are fixed)
+#data.parameters['D_z1_1'] = [ 0., -0.117, 0.117, 0.01, 1, 'nuisance']
+#data.parameters['D_z2_1'] = [ 0., -0.069, 0.069, 0.01, 1, 'nuisance']
+#data.parameters['D_z3_1'] = [ 0., -0.078, 0.078, 0.01, 1, 'nuisance']
+#data.parameters['D_z4_1'] = [ 0., -0.036, 0.036, 0.01, 1, 'nuisance']
+#data.parameters['D_z5_1'] = [ 0., -0.033, 0.033, 0.01, 1, 'nuisance']
+#data.parameters['D_z1_2'] = [ 0., -0.117, 0.117, 0.01, 1, 'nuisance']
+#data.parameters['D_z2_2'] = [ 0., -0.069, 0.069, 0.01, 1, 'nuisance']
+#data.parameters['D_z3_2'] = [ 0., -0.078, 0.078, 0.01, 1, 'nuisance']
+#data.parameters['D_z4_2'] = [ 0., -0.036, 0.036, 0.01, 1, 'nuisance']
+#data.parameters['D_z5_2'] = [ 0., -0.033, 0.033, 0.01, 1, 'nuisance']
+
+#   set2: (mean and shift)
+#       two sub-samples associated with different sets of redshift offsets (other parameters are fixed)
+#data.parameters['A_IA_1'] = [0.0, -6.0, 6.0, 1.0, 1, 'nuisance']
+#data.parameters['A_IA_2'] = [0.0, -6.0, 6.0, 1.0, 1, 'nuisance']
+#data.parameters['D_z1_m'] = [ 0., -0.117, 0.117, 0.01, 1, 'nuisance']
+#data.parameters['D_z2_m'] = [ 0., -0.069, 0.069, 0.01, 1, 'nuisance']
+#data.parameters['D_z3_m'] = [ 0., -0.078, 0.078, 0.01, 1, 'nuisance']
+#data.parameters['D_z4_m'] = [ 0., -0.036, 0.036, 0.01, 1, 'nuisance']
+#data.parameters['D_z5_m'] = [ 0., -0.033, 0.033, 0.01, 1, 'nuisance']
+#data.parameters['D_z1_s'] = [ 0., -0.1, 0.1, 0.01, 1, 'nuisance']
+#data.parameters['D_z2_s'] = [ 0., -0.1, 0.1, 0.01, 1, 'nuisance']
+#data.parameters['D_z3_s'] = [ 0., -0.1, 0.1, 0.01, 1, 'nuisance']
+#data.parameters['D_z4_s'] = [ 0., -0.1, 0.1, 0.01, 1, 'nuisance']
+#data.parameters['D_z5_s'] = [ 0., -0.1, 0.1, 0.01, 1, 'nuisance']
+
+
+#   set2.2: (mean and shift) & wider prior for D_z_s
+#       two sub-samples associated with different sets of redshift offsets (other parameters are fixed)
+data.parameters['A_IA_m'] = [0.0, -6.0, 6.0, 1.0, 1, 'nuisance']
+data.parameters['A_IA_s'] = [0.0, -6.0, 6.0, 1.0, 1, 'nuisance']
+data.parameters['D_z1_m'] = [ 0., -0.117, 0.117, 0.01, 1, 'nuisance']
+data.parameters['D_z2_m'] = [ 0., -0.069, 0.069, 0.01, 1, 'nuisance']
+data.parameters['D_z3_m'] = [ 0., -0.078, 0.078, 0.01, 1, 'nuisance']
+data.parameters['D_z4_m'] = [ 0., -0.036, 0.036, 0.01, 1, 'nuisance']
+data.parameters['D_z5_m'] = [ 0., -0.033, 0.033, 0.01, 1, 'nuisance']
+data.parameters['D_z1_s'] = [ 0., -0.3, 0.3, 0.01, 1, 'nuisance']
+data.parameters['D_z2_s'] = [ 0., -0.3, 0.3, 0.01, 1, 'nuisance']
+data.parameters['D_z3_s'] = [ 0., -0.3, 0.3, 0.01, 1, 'nuisance']
+data.parameters['D_z4_s'] = [ 0., -0.3, 0.3, 0.01, 1, 'nuisance']
+data.parameters['D_z5_s'] = [ 0., -0.3, 0.3, 0.01, 1, 'nuisance']
+
+
+#   set3: (mean and shift) & fix A_IA to 0
+#       two sub-samples associated with different sets of redshift offsets (other parameters are fixed)
+#data.parameters['A_IA'] = [0.0, -1, -1, 0, 1, 'nuisance']
+#data.parameters['D_z1_m'] = [ 0., -0.117, 0.117, 0.01, 1, 'nuisance']
+#data.parameters['D_z2_m'] = [ 0., -0.069, 0.069, 0.01, 1, 'nuisance']
+#data.parameters['D_z3_m'] = [ 0., -0.078, 0.078, 0.01, 1, 'nuisance']
+#data.parameters['D_z4_m'] = [ 0., -0.036, 0.036, 0.01, 1, 'nuisance']
+#data.parameters['D_z5_m'] = [ 0., -0.033, 0.033, 0.01, 1, 'nuisance']
+#data.parameters['D_z1_s'] = [ 0., -0.1, 0.1, 0.01, 1, 'nuisance']
+#data.parameters['D_z2_s'] = [ 0., -0.1, 0.1, 0.01, 1, 'nuisance']
+#data.parameters['D_z3_s'] = [ 0., -0.1, 0.1, 0.01, 1, 'nuisance']
+#data.parameters['D_z4_s'] = [ 0., -0.1, 0.1, 0.01, 1, 'nuisance']
+#data.parameters['D_z5_s'] = [ 0., -0.1, 0.1, 0.01, 1, 'nuisance']
+
