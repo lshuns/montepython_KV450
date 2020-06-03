@@ -24,6 +24,8 @@
 ##############################################################
 from __future__ import print_function
 
+import sys
+
 from montepython.likelihood_class import Likelihood
 import io_mp
 
@@ -41,7 +43,7 @@ try:
 except NameError:
     xrange = range
 
-class kv450_joint_likelihood(Likelihood):
+class kv450_joint_fix_cosmo_H0(Likelihood):
 
     def __init__(self, path, data, command_line):
 
@@ -244,6 +246,42 @@ class kv450_joint_likelihood(Likelihood):
         self.zmax = self.z_p.max()
         self.need_cosmo_arguments(data, {'z_max_pk': self.zmax})
 
+        # redshift offsets
+        if 'D_z1_1' in data.mcmc_parameters:
+            # naive duplicated sets
+            self.z_offset = 'duplicated'
+            print("Redshift offsets strategy: naive duplicated sets.")
+        elif 'D_z1_m' in data.mcmc_parameters:
+            # mean and shift
+            self.z_offset = 'mean'
+            print("Redshift offsets strategy: using mean and shift fitting.")
+        elif 'D_z1' in data.mcmc_parameters:
+            # common set
+            self.z_offset = 'common'
+            print("Redshift offsets strategy: using common set.")
+        else:
+            # no offsets
+            self.z_offset = 'none'
+            print("Redshift offsets strategy: no offsets")
+
+
+        ################################################
+        # intrinsic alignment
+        ################################################
+        if 'A_IA_1' in data.mcmc_parameters:
+            self.A_IA = "duplicated"
+            print("A_IA strategy: naive duplicated sets.")
+        elif 'A_IA_m' in data.mcmc_parameters:
+            # mean and shift
+            self.A_IA = 'mean'
+            print("A_IA strategy: using mean and shift fitting.")
+        elif 'A_IA' in data.mcmc_parameters:
+            self.A_IA = "common"
+            print("A_IA is common.")
+        else:
+            self.A_IA = None
+            prit("A_IA is not used.")
+
 
         ################################################
         # discrete theta values (to convert C_l to xi's)
@@ -374,6 +412,92 @@ class kv450_joint_likelihood(Likelihood):
                 self.int_weight_func[idx_theta] = np.sum(0.5 * (weight_func_integrand[1:] + weight_func_integrand[:-1]) * dtheta)
                 # for convenience:
                 self.thetas_for_theory_binning[idx_theta, :] = theta
+
+
+
+
+        ################################################
+        # cosmo calculation
+        ################################################
+    
+        # Importing the python-wrapped CLASS from the correct folder, defined in
+        # the .conf file, or overwritten at this point by the log.param.
+        # If the cosmological code is CLASS, do the following to import all
+        # relevant quantities
+        try:
+            classy_path = ''
+            for elem in os.listdir(os.path.join(
+                    data.path['cosmo'], "python", "build")):
+                if elem.find("lib.") != -1:
+                    classy_path = os.path.join(
+                        data.path['cosmo'], "python", "build", elem)
+                    break
+        except OSError:
+            raise io_mp.ConfigurationError(
+                "You probably did not compile the python wrapper of CLASS. " +
+                "Please go to /path/to/class/python/ and do\n" +
+                "..]$ python setup.py build")
+
+        # Inserting the previously found path into the list of folders to
+        # search for python modules.
+        sys.path.insert(1, classy_path)
+        try:
+            from classy import Class
+        except ImportError:
+            raise io_mp.MissingLibraryError(
+                "You must have compiled the classy.pyx file. Please go to " +
+                "/path/to/class/python and run the command\n " +
+                "python setup.py build")
+
+        cosmo = Class()
+
+        print('Intitial cosmological parameters passed to CLASS code:')
+        print(data.cosmo_arguments)
+
+        # Prepare the cosmological module with the input parameters
+        cosmo.set(data.cosmo_arguments)
+        cosmo.compute(["lensing"])
+
+        # Omega_m contains all species!
+        self.Omega_m = cosmo.Omega_m()
+        self.small_h = cosmo.h()
+        print('Omega_m =', self.Omega_m)
+        print('h =', self.small_h)
+
+        # One wants to obtain here the relation between z and r, this is done
+        # by asking the cosmological module with the function z_of_r
+        self.r, self.dzdr = cosmo.z_of_r(self.z_p)
+
+        # linear growth rate
+        self.rho_crit = self.get_critical_density()
+        # derive the linear growth factor D(z)
+        self.linear_growth_rate = np.zeros_like(self.z_p)
+        #print(self.redshifts)
+        for index_z, z in enumerate(self.z_p):
+            # for CLASS ver >= 2.6:
+            self.linear_growth_rate[index_z] = cosmo.scale_independent_growth_factor(z)
+        # normalize to unity at z=0:
+        # for CLASS ver >= 2.6:
+        self.linear_growth_rate /= cosmo.scale_independent_growth_factor(0.)
+
+        # Get power spectrum P(k=l/r,z(r)) from cosmological module
+        #self.pk_dm = np.zeros_like(self.pk)
+        self.pk = np.zeros((self.nlmax, self.nzmax), 'float64')
+        self.pk_lin = np.zeros((self.nlmax, self.nzmax), 'float64')
+        kmax_in_inv_Mpc = self.k_max_h_by_Mpc * self.small_h
+        for index_l in xrange(self.nlmax):
+            for index_z in xrange(1, self.nzmax):
+
+                k_in_inv_Mpc =  (self.l[index_l] + 0.5) / self.r[index_z]
+                if (k_in_inv_Mpc > kmax_in_inv_Mpc):
+                    pk_dm = 0.
+                    pk_lin_dm = 0.
+                else:
+                    pk_dm = cosmo.pk(k_in_inv_Mpc, self.z_p[index_z])
+                    pk_lin_dm = cosmo.pk_lin(k_in_inv_Mpc, self.z_p[index_z])
+
+                self.pk[index_l, index_z] = pk_dm
+                self.pk_lin[index_l, index_z] = pk_lin_dm
 
         return
 
@@ -565,20 +689,19 @@ class kv450_joint_likelihood(Likelihood):
 
         return bias_sqr
 
+    def get_IA_factor(self, z, linear_growth_rate, amplitude, exponent):
 
-    def get_IA_factor(self, z, linear_growth_rate, rho_crit, Omega_m, small_h, amplitude, exponent):
-
-        const = 5e-14 / small_h**2 # Mpc^3 / M_sol
+        const = 5e-14 / self.small_h**2 # Mpc^3 / M_sol
 
         # arbitrary convention
         z0 = 0.3
         #print(utils.growth_factor(z, self.Omega_m))
         #print(self.rho_crit)
-        factor = -1. * amplitude * const * rho_crit * Omega_m / linear_growth_rate * ((1. + z) / (1. + z0))**exponent
+        factor = -1. * amplitude * const * self.rho_crit * self.Omega_m / linear_growth_rate * ((1. + z) / (1. + z0))**exponent
 
         return factor
 
-    def get_critical_density(self, small_h):
+    def get_critical_density(self):
         """
         The critical density of the Universe at redshift 0.
 
@@ -594,15 +717,15 @@ class kv450_joint_likelihood(Likelihood):
         G_const_Mpc_Msun_s = M_sun_g * (6.673e-8) / Mpc_cm**3.
         H100_s = 100. / (Mpc_cm * 1.0e-5) # s^-1
 
-        rho_crit_0 = 3. * (small_h * H100_s)**2. / (8. * np.pi * G_const_Mpc_Msun_s)
+        rho_crit_0 = 3. * (self.small_h * H100_s)**2. / (8. * np.pi * G_const_Mpc_Msun_s)
 
         return rho_crit_0
 
     def loglkl(self, cosmo, data):
 
         # get all cosmology dependent quantities here:
-        xi_theo_1 = self.cosmo_calculations(cosmo, data, np.size(self.xi_obs_1), sample_index = 1)
-        xi_theo_2 = self.cosmo_calculations(cosmo, data, np.size(self.xi_obs_2), sample_index = 2)
+        xi_theo_1 = self.cosmo_calculations(data, np.size(self.xi_obs_1), sample_index = 1)
+        xi_theo_2 = self.cosmo_calculations(data, np.size(self.xi_obs_2), sample_index = 2)
 
         # final chi2
         vec = np.concatenate((xi_theo_1, xi_theo_2))[self.mask_indices] - np.concatenate((self.xi_obs_1, self.xi_obs_2))[self.mask_indices]
@@ -615,35 +738,49 @@ class kv450_joint_likelihood(Likelihood):
             yt = solve_triangular(self.cholesky_transform, vec, lower=True)
             chi2 = yt.dot(yt)
 
+        # enforce Gaussian priors on NUISANCE parameters if requested:
+        if self.use_gaussian_prior_for_nuisance:
+
+            for idx_nuisance, nuisance_name in enumerate(self.gaussian_prior_name):
+
+                scale = data.mcmc_parameters[nuisance_name]['scale']
+                chi2 += (data.mcmc_parameters[nuisance_name]['current'] * scale - self.gaussian_prior_center[idx_nuisance])**2 / self.gaussian_prior_sigma[idx_nuisance]**2
+
         return -chi2/2.
 
 
-    def cosmo_calculations(self, cosmo, data, size_xi_obs, sample_index):
-
-        # Omega_m contains all species!
-        Omega_m = cosmo.Omega_m()
-        small_h = cosmo.h()
+    def cosmo_calculations(self, data, size_xi_obs, sample_index):
 
         # needed for IA modelling:
-        param_name1 = 'A_IA'
-        param_name2 = 'exp_IA'
+        if self.A_IA == 'duplicated':
+            param_name1 = 'A_IA_{:}'.format(sample_index)
+            amp_IA = data.mcmc_parameters[param_name1]['current'] * data.mcmc_parameters[param_name1]['scale']
+            intrinsic_alignment = True
 
-        if (param_name1 in data.mcmc_parameters) and (param_name2 in data.mcmc_parameters):
-            amp_IA = data.mcmc_parameters[param_name1]['current'] * data.mcmc_parameters[param_name1]['scale']
-            exp_IA = data.mcmc_parameters[param_name2]['current'] * data.mcmc_parameters[param_name2]['scale']
+        elif self.A_IA == 'mean':
+            param_name1 = 'A_IA_m'
+            param_name2 = 'A_IA_s'
+            amp_IA_mean = data.mcmc_parameters[param_name1]['current'] * data.mcmc_parameters[param_name1]['scale']
+            amp_IA_shift = data.mcmc_parameters[param_name2]['current'] * data.mcmc_parameters[param_name2]['scale']
+            if sample_index == 1:
+                amp_IA = amp_IA_mean + amp_IA_shift
+            elif sample_index == 2:
+                amp_IA = amp_IA_mean - amp_IA_shift
+            else:
+                raise Exception("Unexpected sample_index in amp_IA !")
             intrinsic_alignment = True
-        elif (param_name1 in data.mcmc_parameters) and (param_name2 not in data.mcmc_parameters):
+
+        elif self.A_IA == 'common':
+            param_name1 = 'A_IA'
             amp_IA = data.mcmc_parameters[param_name1]['current'] * data.mcmc_parameters[param_name1]['scale']
-            # redshift-scaling is turned off:
-            exp_IA = 0.
             intrinsic_alignment = True
+
         else:
             intrinsic_alignment = False
 
+        # exp_IA is not used
+        exp_IA = 0.            
 
-        # One wants to obtain here the relation between z and r, this is done
-        # by asking the cosmological module with the function z_of_r
-        r, dzdr = cosmo.z_of_r(self.z_p)
 
         # Compute now the selection function p(r) = p(z) dz/dr normalized
         # to one. The np.newaxis helps to broadcast the one-dimensional array
@@ -655,16 +792,29 @@ class kv450_joint_likelihood(Likelihood):
         for zbin in xrange(self.nzbins):
 
             # redshift offset
-            param_name = 'D_z{:}_{:}'.format(zbin + 1, sample_index)
-            if param_name in data.mcmc_parameters:
+            if self.z_offset == 'duplicated':
+                param_name = 'D_z{:}_{:}'.format(zbin + 1, sample_index)
                 z_mod = self.z_p + data.mcmc_parameters[param_name]['current'] * data.mcmc_parameters[param_name]['scale']
-            else:
+
+            elif self.z_offset == 'mean':
+                param_name1 = 'D_z{:}_m'.format(zbin + 1)
+                param_name2 = 'D_z{:}_s'.format(zbin + 1)
+                Dz_mean = data.mcmc_parameters[param_name1]['current'] * data.mcmc_parameters[param_name1]['scale']
+                Dz_shift = data.mcmc_parameters[param_name2]['current'] * data.mcmc_parameters[param_name2]['scale']
+                if sample_index == 1:
+                    z_mod = self.z_p + (Dz_mean + Dz_shift)
+                elif sample_index == 2:
+                    z_mod = self.z_p + (Dz_mean - Dz_shift)
+                else:
+                    raise Exception("Unexpected sample_index in redshift offsets!")
+                
+            elif self.z_offset == 'common':
                 param_name = 'D_z{:}'.format(zbin + 1)
-                if param_name in data.mcmc_parameters:
-                    z_mod = self.z_p + data.mcmc_parameters[param_name]['current'] * data.mcmc_parameters[param_name]['scale']
-                else:           
-                    z_mod = self.z_p
-            
+                z_mod = self.z_p + data.mcmc_parameters[param_name]['current'] * data.mcmc_parameters[param_name]['scale']
+                
+            else:
+                z_mod = self.z_p
+
             # the artificial zero-point is not included for spline
             spline_pz = itp.interp1d(self.z_samples[sample_index-1][zbin, 1:], self.hist_samples[sample_index-1][zbin, 1:], kind=self.type_redshift_interp)
             mask_min = z_mod >= self.z_samples[sample_index-1][zbin, 1:].min()
@@ -676,7 +826,7 @@ class kv450_joint_likelihood(Likelihood):
             dz = self.z_p[1:] - self.z_p[:-1]
             pz_norm[zbin] = np.sum(0.5 * (pz[1:, zbin] + pz[:-1, zbin]) * dz)
 
-        pr = pz * (dzdr[:, np.newaxis] / pz_norm)
+        pr = pz * (self.dzdr[:, np.newaxis] / pz_norm)
 
 
         # nuisance parameter for m-correction (one value for all bins):
@@ -766,26 +916,6 @@ class kv450_joint_likelihood(Likelihood):
         temp = np.concatenate((xip_c, xim_c))
         xipm_c = self.__get_xi_obs(temp)
 
-        if intrinsic_alignment:
-            rho_crit = self.get_critical_density(small_h)
-            # derive the linear growth factor D(z)
-            linear_growth_rate = np.zeros_like(self.z_p)
-            #print(self.redshifts)
-            for index_z, z in enumerate(self.z_p):
-                try:
-                    # my own function from private CLASS modification:
-                    linear_growth_rate[index_z] = cosmo.growth_factor_at_z(z)
-                except:
-                    # for CLASS ver >= 2.6:
-                    linear_growth_rate[index_z] = cosmo.scale_independent_growth_factor(z)
-            # normalize to unity at z=0:
-            try:
-                # my own function from private CLASS modification:
-                linear_growth_rate /= cosmo.growth_factor_at_z(0.)
-            except:
-                # for CLASS ver >= 2.6:
-                linear_growth_rate /= cosmo.scale_independent_growth_factor(0.)
-
         # Compute function g_i(r), that depends on r and the bin
         # g_i(r) = 2r(1+z(r)) int_r^+\infty drs p_r(rs) (rs-r)/rs
         g = np.zeros((self.nzmax, self.nzbins), 'float64')
@@ -793,39 +923,10 @@ class kv450_joint_likelihood(Likelihood):
             # shift only necessary if z[0] = 0
             for nr in xrange(1, self.nzmax - 1):
             #for nr in xrange(self.nzmax - 1):
-                fun = pr[nr:, Bin] * (r[nr:] - r[nr]) / r[nr:]
-                g[nr, Bin] = np.sum(0.5*(fun[1:] + fun[:-1]) * (r[nr+1:] - r[nr:-1]))
-                g[nr, Bin] *= 2. * r[nr] * (1. + self.z_p[nr])
+                fun = pr[nr:, Bin] * (self.r[nr:] - self.r[nr]) / self.r[nr:]
+                g[nr, Bin] = np.sum(0.5*(fun[1:] + fun[:-1]) * (self.r[nr+1:] - self.r[nr:-1]))
+                g[nr, Bin] *= 2. * self.r[nr] * (1. + self.z_p[nr])
 
-        #print('g(r) \n', self.g)
-        # Get power spectrum P(k=l/r,z(r)) from cosmological module
-        #self.pk_dm = np.zeros_like(self.pk)
-        pk = np.zeros((self.nlmax, self.nzmax), 'float64')
-        pk_lin = np.zeros((self.nlmax, self.nzmax), 'float64')
-        kmax_in_inv_Mpc = self.k_max_h_by_Mpc * cosmo.h()
-        for index_l in xrange(self.nlmax):
-            for index_z in xrange(1, self.nzmax):
-
-                k_in_inv_Mpc =  (self.l[index_l] + 0.5) / r[index_z]
-                if (k_in_inv_Mpc > kmax_in_inv_Mpc):
-                    pk_dm = 0.
-                    pk_lin_dm = 0.
-                else:
-                    pk_dm = cosmo.pk(k_in_inv_Mpc, self.z_p[index_z])
-                    pk_lin_dm = cosmo.pk_lin(k_in_inv_Mpc, self.z_p[index_z])
-
-
-                param_name = 'A_bary'
-                # param_name = 'A_bary_{:}'.format(sample_index)
-
-                if param_name in data.mcmc_parameters:
-                    A_bary = data.mcmc_parameters[param_name]['current'] * data.mcmc_parameters[param_name]['scale']
-                    pk[index_l, index_z] = pk_dm * self.baryon_feedback_bias_sqr(k_in_inv_Mpc / self.small_h, self.z_p[index_z], A_bary=A_bary)
-                    # don't apply the baryon feedback model to the linear Pk!
-                    #self.pk_lin[index_l, index_z] = pk_lin_dm * self.baryon_feedback_bias_sqr(k_in_inv_Mpc / self.small_h, self.z_p[index_z], A_bary=A_bary)
-                else:
-                    pk[index_l, index_z] = pk_dm
-                    pk_lin[index_l, index_z] = pk_lin_dm
 
 
         Cl_GG_integrand = np.zeros((self.nzmax, self.nzcorrs), 'float64')
@@ -838,28 +939,28 @@ class kv450_joint_likelihood(Likelihood):
             Cl_GI_integrand = np.zeros_like(Cl_GG_integrand)
             Cl_GI = np.zeros_like(Cl_GG)
 
-        dr = r[1:] - r[:-1]
+        dr = self.r[1:] - self.r[:-1]
         # Start loop over l for computation of C_l^shear
         # Start loop over l for computation of E_l
         for il in xrange(self.nlmax):
             # find Cl_integrand = (g(r) / r)**2 * P(l/r,z(r))
             for Bin1 in xrange(self.nzbins):
                 for Bin2 in xrange(Bin1, self.nzbins):
-                    Cl_GG_integrand[1:, self.one_dim_index(Bin1,Bin2)] = g[1:, Bin1] * g[1:, Bin2] / r[1:]**2 * pk[il, 1:]
+                    Cl_GG_integrand[1:, self.one_dim_index(Bin1,Bin2)] = g[1:, Bin1] * g[1:, Bin2] / self.r[1:]**2 * self.pk[il, 1:]
                     #print(self.Cl_integrand)
                     if intrinsic_alignment:
-                        factor_IA = self.get_IA_factor(self.z_p, linear_growth_rate, rho_crit, Omega_m, small_h, amp_IA, exp_IA) #/ self.dzdr[1:]
+                        factor_IA = self.get_IA_factor(self.z_p, self.linear_growth_rate, amp_IA, exp_IA) #/ self.dzdr[1:]
                         #print(F_of_x)
                         #print(self.eta_r[1:, zbin1].shape)
                         if self.use_linear_pk_for_IA:
                             # this term (II) uses the linear matter power spectrum P_lin(k, z)
-                            Cl_II_integrand[1:, self.one_dim_index(Bin1,Bin2)] = pr[1:, Bin1] * pr[1:, Bin2] * factor_IA[1:]**2 / r[1:]**2 * pk_lin[il, 1:]
+                            Cl_II_integrand[1:, self.one_dim_index(Bin1,Bin2)] = pr[1:, Bin1] * pr[1:, Bin2] * factor_IA[1:]**2 / self.r[1:]**2 * self.pk_lin[il, 1:]
                             # this term (GI) uses sqrt(P_lin(k, z) * P_nl(k, z))
-                            Cl_GI_integrand[1:, self.one_dim_index(Bin1,Bin2)] = (g[1:, Bin1] * pr[1:, Bin2] + g[1:, Bin2] * pr[1:, Bin1]) * factor_IA[1:] / r[1:]**2 * np.sqrt(pk_lin[il, 1:] * pk[il, 1:])
+                            Cl_GI_integrand[1:, self.one_dim_index(Bin1,Bin2)] = (g[1:, Bin1] * pr[1:, Bin2] + g[1:, Bin2] * pr[1:, Bin1]) * factor_IA[1:] / self.r[1:]**2 * np.sqrt(self.pk_lin[il, 1:] * self.pk[il, 1:])
                         else:
                             # both II and GI terms use the non-linear matter power spectrum P_nl(k, z)
-                            Cl_II_integrand[1:, self.one_dim_index(Bin1,Bin2)] = pr[1:, Bin1] * pr[1:, Bin2] * factor_IA[1:]**2 / r[1:]**2 * pk[il, 1:]
-                            Cl_GI_integrand[1:, self.one_dim_index(Bin1,Bin2)] = (g[1:, Bin1] * pr[1:, Bin2] + g[1:, Bin2] * pr[1:, Bin1]) * factor_IA[1:] / r[1:]**2 * pk[il, 1:]
+                            Cl_II_integrand[1:, self.one_dim_index(Bin1,Bin2)] = pr[1:, Bin1] * pr[1:, Bin2] * factor_IA[1:]**2 / self.r[1:]**2 * self.pk[il, 1:]
+                            Cl_GI_integrand[1:, self.one_dim_index(Bin1,Bin2)] = (g[1:, Bin1] * pr[1:, Bin2] + g[1:, Bin2] * pr[1:, Bin1]) * factor_IA[1:] / self.r[1:]**2 * self.pk[il, 1:]
 
             # Integrate over r to get C_l^shear_ij = P_ij(l)
             # C_l^shear_ij = 9/16 Omega0_m^2 H_0^4 \sum_0^rmax dr (g_i(r)
@@ -869,16 +970,16 @@ class kv450_joint_likelihood(Likelihood):
             # (since P(k)*dr is in units of Mpc**4)
             for Bin in xrange(self.nzcorrs):
                 Cl_GG[il, Bin] = np.sum(0.5*(Cl_GG_integrand[1:, Bin] + Cl_GG_integrand[:-1, Bin]) * dr)
-                Cl_GG[il, Bin] *= 9. / 16. * Omega_m**2
-                Cl_GG[il, Bin] *= (small_h / 2997.9)**4
+                Cl_GG[il, Bin] *= 9. / 16. * self.Omega_m**2
+                Cl_GG[il, Bin] *= (self.small_h / 2997.9)**4
 
                 if intrinsic_alignment:
                     Cl_II[il, Bin] = np.sum(0.5 * (Cl_II_integrand[1:, Bin] + Cl_II_integrand[:-1, Bin]) * dr)
 
                     Cl_GI[il, Bin] = np.sum(0.5 * (Cl_GI_integrand[1:, Bin] + Cl_GI_integrand[:-1, Bin]) * dr)
                     # here we divide by 4, because we get a 2 from g(r)!
-                    Cl_GI[il, Bin] *= 3. / 4. * Omega_m
-                    Cl_GI[il, Bin] *= (small_h / 2997.9)**2
+                    Cl_GI[il, Bin] *= 3. / 4. * self.Omega_m
+                    Cl_GI[il, Bin] *= (self.small_h / 2997.9)**2
 
         if intrinsic_alignment:
             Cl = Cl_GG + Cl_GI + Cl_II

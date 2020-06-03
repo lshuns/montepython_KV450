@@ -1,4 +1,4 @@
-This repository contains the likelihood module modified from 'kv450_joint_likelihood' with fixed cosmo. That is cosmology code (CLASS) only calculated once. In this way, likelihood can be calculated faster.
+This repository contains the likelihood module modified to do null test with fixed cosmo. That is cosmology code (CLASS) only calculated once. In this way, likelihood can be calculated faster.
 
 This version of likelihood allows to analyse two data vectors at the same time with a common set of fixed parameters (including the cosmological parameters or necessary nuisance parameters). For the set of free parameters, both duplicated sets and common set are supported.
 
