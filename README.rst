@@ -1,6 +1,6 @@
-============================================================
-Reduced version of Monte Python, dedicated to KV450 analysis
-============================================================
+=====================================================================
+Reduced version of Monte Python, dedicated to KV450 consistency tests
+=====================================================================
 
 For running, check out scripts/
 
